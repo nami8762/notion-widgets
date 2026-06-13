@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>N Quick Links Widget</title>
+  <style>
+    :root {
+      --ink: #303130;
+      --muted: #8f8982;
+      --paper: #fbfaf7;
+      --panel: #f3eeeb;
+      --line: #d9d1c9;
+      --accent: #bda38f;
+      --font: Georgia, "Times New Roman", serif;
+      --scale: 1;
+      --shadow: 0 18px 40px rgba(48, 49, 48, 0.07);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: transparent;
+      color: var(--ink);
+      font-family: var(--font);
+      letter-spacing: 0;
+    }
+
+    body { padding: calc(10px * var(--scale)); }
+
+    .widget {
+      width: min(100%, calc(360px * var(--scale)));
+      margin: 0 auto;
+      padding: calc(16px * var(--scale));
+      border: 1px solid rgba(48, 49, 48, 0.11);
+      border-radius: 12px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: calc(10px * var(--scale));
+    }
+
+    details { position: relative; z-index: 2; }
+
+    summary {
+      list-style: none;
+      border: 1px solid rgba(48, 49, 48, 0.12);
+      border-radius: 999px;
+      padding: 6px 11px;
+      background: rgba(255, 255, 255, 0.74);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 11px;
+      user-select: none;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    .settings {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      width: min(280px, calc(100vw - 34px));
+      padding: 12px;
+      border: 1px solid rgba(48, 49, 48, 0.12);
+      border-radius: 10px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    label span {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    input,
+    select {
+      width: 100%;
+      height: 34px;
+      border: 1px solid rgba(48, 49, 48, 0.12);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--ink);
+      font: inherit;
+      font-size: 12px;
+    }
+
+    input[type="number"],
+    select { padding: 0 8px; }
+    input[type="color"] { padding: 3px; cursor: pointer; }
+
+    .head {
+      display: flex;
+      align-items: center;
+      gap: calc(8px * var(--scale));
+      padding: calc(10px * var(--scale)) calc(12px * var(--scale));
+      border-radius: 7px;
+      background: var(--panel);
+      border-left: calc(4px * var(--scale)) solid var(--accent);
+      font-weight: 800;
+      font-size: calc(16px * var(--scale));
+    }
+
+    .links {
+      display: grid;
+      gap: calc(8px * var(--scale));
+      margin-top: calc(12px * var(--scale));
+    }
+
+    .link {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: calc(9px * var(--scale));
+      min-height: calc(42px * var(--scale));
+      padding: calc(9px * var(--scale)) calc(10px * var(--scale));
+      border: 1px solid rgba(48, 49, 48, 0.1);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.66);
+      color: inherit;
+      text-decoration: none;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .link:hover,
+    .link:focus-visible {
+      transform: translateY(-1px);
+      border-color: rgba(48, 49, 48, 0.22);
+      background: rgba(255, 255, 255, 0.9);
+      outline: none;
+    }
+
+    .plus {
+      width: calc(20px * var(--scale));
+      height: calc(20px * var(--scale));
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--panel);
+      color: var(--accent);
+      font-size: calc(16px * var(--scale));
+      line-height: 1;
+    }
+
+    .label {
+      min-width: 0;
+      font-size: calc(13px * var(--scale));
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .arrow {
+      color: var(--muted);
+      font-size: calc(14px * var(--scale));
+    }
+
+    .rule {
+      height: calc(4px * var(--scale));
+      margin-top: calc(12px * var(--scale));
+      background: linear-gradient(90deg, var(--accent), var(--line));
+      border-radius: 999px;
+    }
+
+    @media (max-width: 360px) {
+      .settings-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="widget" aria-label="Quick links widget">
+    <div class="toolbar">
+      <details>
+        <summary>Settings</summary>
+        <div class="settings">
+          <div class="settings-grid">
+            <label>
+              <span>Size %</span>
+              <input id="size" type="number" min="55" max="140" step="1" />
+            </label>
+            <label>
+              <span>Font</span>
+              <select id="font">
+                <option value="serif">Serif</option>
+                <option value="modern">Modern</option>
+                <option value="mono">Mono</option>
+              </select>
+            </label>
+            <label>
+              <span>Text</span>
+              <input id="text-color" type="color" />
+            </label>
+            <label>
+              <span>Panel</span>
+              <input id="panel-color" type="color" />
+            </label>
+            <label>
+              <span>Accent</span>
+              <input id="accent-color" type="color" />
+            </label>
+            <label>
+              <span>Page</span>
+              <input id="page-color" type="color" />
+            </label>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <section class="head">Quick Links</section>
+    <nav class="links">
+      <a class="link" href="https://app.notion.com/p/b3541f8d78cb409a9fbb4390d442a7f2" target="_blank" rel="noopener">
+        <span class="plus">+</span><span class="label">Add New Memo</span><span class="arrow">↗</span>
+      </a>
+      <a class="link" href="https://app.notion.com/p/37c363e0e7e981e5bfc0d0f9e66ebca1" target="_blank" rel="noopener">
+        <span class="plus">+</span><span class="label">Add New Task</span><span class="arrow">↗</span>
+      </a>
+      <a class="link" href="https://app.notion.com/p/d77e4df1964c4d8ea6479c6583e1a570" target="_blank" rel="noopener">
+        <span class="plus">+</span><span class="label">Add New Diary</span><span class="arrow">↗</span>
+      </a>
+      <a class="link" href="https://app.notion.com/p/1cf363e0e7e980f4bd8ddfef24984389" target="_blank" rel="noopener">
+        <span class="plus">+</span><span class="label">Focus Timer</span><span class="arrow">↗</span>
+      </a>
+    </nav>
+    <div class="rule" aria-hidden="true"></div>
+  </main>
+
+  <script>
+    const key = "n-quick-links-widget-settings";
+    const defaults = {
+      size: 100,
+      font: "serif",
+      textColor: "#303130",
+      panelColor: "#f3eeeb",
+      accentColor: "#bda38f",
+      pageColor: "#fbfaf7"
+    };
+    const fonts = {
+      serif: 'Georgia, "Times New Roman", serif',
+      modern: '"Helvetica Neue", Arial, sans-serif',
+      mono: '"Courier New", monospace'
+    };
+
+    function validHex(value, fallback) {
+      return /^#[0-9a-f]{6}$/i.test(value || "") ? value : fallback;
+    }
+
+    function validSize(value, fallback = defaults.size) {
+      const size = Number(value);
+      if (!Number.isFinite(size)) return fallback;
+      return Math.min(140, Math.max(55, Math.round(size)));
+    }
+
+    function load() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(key) || "{}");
+        return {
+          ...defaults,
+          ...saved,
+          size: validSize(saved.size),
+          textColor: validHex(saved.textColor, defaults.textColor),
+          panelColor: validHex(saved.panelColor, defaults.panelColor),
+          accentColor: validHex(saved.accentColor, defaults.accentColor),
+          pageColor: validHex(saved.pageColor, defaults.pageColor)
+        };
+      } catch (_) {
+        return { ...defaults };
+      }
+    }
+
+    let settings = load();
+
+    function save() {
+      localStorage.setItem(key, JSON.stringify(settings));
+    }
+
+    function apply() {
+      document.documentElement.style.setProperty("--scale", settings.size / 100);
+      document.documentElement.style.setProperty("--font", fonts[settings.font] || fonts.serif);
+      document.documentElement.style.setProperty("--ink", settings.textColor);
+      document.documentElement.style.setProperty("--panel", settings.panelColor);
+      document.documentElement.style.setProperty("--accent", settings.accentColor);
+      document.documentElement.style.setProperty("--paper", settings.pageColor);
+      document.getElementById("size").value = settings.size;
+      document.getElementById("font").value = settings.font;
+      document.getElementById("text-color").value = settings.textColor;
+      document.getElementById("panel-color").value = settings.panelColor;
+      document.getElementById("accent-color").value = settings.accentColor;
+      document.getElementById("page-color").value = settings.pageColor;
+    }
+
+    ["size", "font", "text-color", "panel-color", "accent-color", "page-color"].forEach((id) => {
+      const input = document.getElementById(id);
+      input.addEventListener(input.type === "color" ? "input" : "change", () => {
+        const map = {
+          size: "size",
+          font: "font",
+          "text-color": "textColor",
+          "panel-color": "panelColor",
+          "accent-color": "accentColor",
+          "page-color": "pageColor"
+        };
+        settings = { ...settings, [map[id]]: id === "size" ? validSize(input.value) : input.value };
+        apply();
+        save();
+      });
+    });
+
+    apply();
+  </script>
+</body>
+</html>
