@@ -148,7 +148,7 @@
     }
 
     .current {
-      display: none;
+      display: grid;
       grid-template-columns: calc(168px * var(--scale)) minmax(0, 1fr);
       gap: calc(24px * var(--scale));
       align-items: center;
@@ -299,7 +299,7 @@
 
     .forecast {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: calc(7px * var(--scale));
     }
 
@@ -449,7 +449,7 @@
   </main>
 
   <script>
-    const key = "n-weather-widget-settings-v4";
+    const key = "n-weather-widget-settings-v5";
     const defaults = {
       font: "serif",
       size: 72,
@@ -735,7 +735,7 @@
     }
 
     function renderForecast(daily, tempUnit, timezone) {
-      document.getElementById("forecast").innerHTML = daily.time.slice(0, 5).map((dateText, index) => {
+      document.getElementById("forecast").innerHTML = daily.time.slice(0, 7).map((dateText, index) => {
         const max = Math.round(daily.temperature_2m_max[index]);
         const min = Math.round(daily.temperature_2m_min[index]);
         const rain = daily.precipitation_probability_max[index] ?? 0;
