@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>N Progress Widget</title>
+  <style>
+    :root {
+      --ink: #2f3130;
+      --muted: rgba(47, 49, 48, 0.55);
+      --paper: #fbfaf7;
+      --track: #e8e3db;
+      --fill: #a89f95;
+      --border: rgba(47, 49, 48, 0.1);
+      --font: Georgia, "Times New Roman", serif;
+      --shadow: 0 18px 40px rgba(47, 49, 48, 0.08);
+      --scale: 0.72;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: transparent; color: var(--ink); font-family: var(--font); }
+    body { padding: calc(12px * var(--scale)); }
+    .widget {
+      width: min(100%, calc(440px * var(--scale)));
+      margin: 0 auto;
+      padding: calc(22px * var(--scale)) calc(22px * var(--scale)) calc(16px * var(--scale));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+    .toolbar { display: flex; justify-content: flex-end; margin-bottom: calc(8px * var(--scale)); }
+    summary {
+      list-style: none; cursor: pointer; font-size: 11px; color: var(--muted);
+      border: 1px solid var(--border); border-radius: 999px; padding: 5px 10px; background: rgba(255,255,255,0.7);
+    }
+    summary::-webkit-details-marker { display: none; }
+    .settings { margin-top: 8px; display: flex; gap: 8px; align-items: center; }
+    .settings label { font-size: 11px; color: var(--muted); }
+    .settings input { width: 70px; height: 30px; border: 1px solid var(--border); border-radius: 8px; padding: 0 8px; font: inherit; font-size: 12px; }
+    .row { margin-bottom: calc(15px * var(--scale)); }
+    .row:last-child { margin-bottom: calc(4px * var(--scale)); }
+    .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: calc(6px * var(--scale)); }
+    .label { font-size: calc(13px * var(--scale)); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); }
+    .pct { font-size: calc(12px * var(--scale)); color: var(--muted); }
+    .bar { height: calc(9px * var(--scale)); border-radius: 999px; background: var(--track); overflow: hidden; }
+    .bar > span { display: block; height: 100%; width: 0; background: var(--fill); border-radius: 999px; transition: width 0.6s ease; }
+  </style>
+</head>
+<body>
+  <main class="widget">
+    <div class="toolbar">
+      <details>
+        <summary>Size</summary>
+        <div class="settings">
+          <label>Size %</label>
+          <input id="size" type="number" min="55" max="140" step="1" />
+        </div>
+      </details>
+    </div>
+    <div class="row"><div class="top"><span class="label">Year</span><span class="pct" id="p-year">--%</span></div><div class="bar"><span id="b-year"></span></div></div>
+    <div class="row"><div class="top"><span class="label">Month</span><span class="pct" id="p-month">--%</span></div><div class="bar"><span id="b-month"></span></div></div>
+    <div class="row"><div class="top"><span class="label">Week</span><span class="pct" id="p-week">--%</span></div><div class="bar"><span id="b-week"></span></div></div>
+    <div class="row"><div class="top"><span class="label">Day</span><span class="pct" id="p-day">--%</span></div><div class="bar"><span id="b-day"></span></div></div>
+  </main>
+  <script>
+    const key = "n-progress-widget-settings-v1";
+    const defaults = { size: 72 };
+    function validSize(v, f = defaults.size) { const n = Number(v); if (!Number.isFinite(n)) return f; return Math.min(140, Math.max(55, Math.round(n))); }
+    function load() { try { const s = JSON.parse(localStorage.getItem(key) || "{}"); return { ...defaults, ...s, size: validSize(s.size) }; } catch (e) { return { ...defaults }; } }
+    let settings = load();
+    function applySize() { document.documentElement.style.setProperty("--scale", settings.size / 100); document.getElementById("size").value = settings.size; }
+    function pct(a, b) { return Math.min(100, Math.max(0, Math.round((a / b) * 100))); }
+    function update() {
+      const now = new Date();
+      const y0 = new Date(now.getFullYear(), 0, 1).getTime();
+      const y1 = new Date(now.getFullYear() + 1, 0, 1).getTime();
+      const m0 = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+      const m1 = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
+      const dayMs = 86400000;
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const intoDay = now.getTime() - startOfDay;
+      const dow = now.getDay(); // 0=Sun
+      const intoWeek = dow * dayMs + intoDay;
+      const data = {
+        year: pct(now.getTime() - y0, y1 - y0),
+        month: pct(now.getTime() - m0, m1 - m0),
+        week: pct(intoWeek, 7 * dayMs),
+        day: pct(intoDay, dayMs)
+      };
+      for (const k of ["year", "month", "week", "day"]) {
+        document.getElementById("p-" + k).textContent = data[k] + "%";
+        document.getElementById("b-" + k).style.width = data[k] + "%";
+      }
+    }
+    document.getElementById("size").addEventListener("input", (e) => {
+      settings = { ...settings, size: validSize(e.target.value) };
+      localStorage.setItem(key, JSON.stringify(settings));
+      applySize();
+    });
+    applySize();
+    update();
+    setInterval(update, 60000);
+  </script>
+</body>
+</html>
