@@ -9,8 +9,8 @@
       --ink: #2f3130;
       --muted: rgba(47, 49, 48, 0.56);
       --paper: #fbfaf7;
-      --weather: #e8e3db;
-      --accent: #a89f95;
+      --weather: #e7e5e1;
+      --accent: #9e9c98;
       --border: rgba(47, 49, 48, 0.1);
       --font: Georgia, "Times New Roman", serif;
       --shadow: 0 18px 40px rgba(47, 49, 48, 0.08);
@@ -148,7 +148,7 @@
     }
 
     .current {
-      display: grid;
+      display: none;
       grid-template-columns: calc(168px * var(--scale)) minmax(0, 1fr);
       gap: calc(24px * var(--scale));
       align-items: center;
@@ -299,7 +299,7 @@
 
     .forecast {
       display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: calc(7px * var(--scale));
     }
 
@@ -449,13 +449,13 @@
   </main>
 
   <script>
-    const key = "n-weather-widget-settings-v3";
+    const key = "n-weather-widget-settings-v4";
     const defaults = {
       font: "serif",
       size: 72,
       textColor: "#2f3130",
-      weatherColor: "#e8e3db",
-      accentColor: "#a89f95",
+      weatherColor: "#e7e5e1",
+      accentColor: "#9e9c98",
       pageColor: "#fbfaf7",
       place: "kochi",
       custom: null
@@ -735,7 +735,7 @@
     }
 
     function renderForecast(daily, tempUnit, timezone) {
-      document.getElementById("forecast").innerHTML = daily.time.slice(0, 7).map((dateText, index) => {
+      document.getElementById("forecast").innerHTML = daily.time.slice(0, 5).map((dateText, index) => {
         const max = Math.round(daily.temperature_2m_max[index]);
         const min = Math.round(daily.temperature_2m_min[index]);
         const rain = daily.precipitation_probability_max[index] ?? 0;
