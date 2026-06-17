@@ -13,80 +13,63 @@
       --field: #e7e5e1;
       --border: rgba(47, 49, 48, 0.1);
       --serif: Georgia, "Times New Roman", serif;
-      --shadow: 0 18px 40px rgba(47, 49, 48, 0.08);
+      --shadow: 0 12px 30px rgba(47, 49, 48, 0.06);
       --scale: 1;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; background: transparent; color: var(--ink); font-family: var(--serif); }
-    body { padding: calc(12px * var(--scale)); }
+    body { padding: calc(8px * var(--scale)); }
     .card {
-      width: min(100%, calc(720px * var(--scale)));
+      position: relative;
+      width: min(100%, calc(820px * var(--scale)));
       margin: 0 auto;
-      padding: calc(30px * var(--scale)) calc(28px * var(--scale)) calc(26px * var(--scale));
+      padding: calc(15px * var(--scale)) calc(40px * var(--scale)) calc(14px * var(--scale));
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 12px;
       background: var(--paper);
       box-shadow: var(--shadow);
       text-align: center;
     }
-    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: calc(6px * var(--scale)); }
-    .label { font-size: calc(11px * var(--scale)); letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
-    .gear { border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: calc(15px * var(--scale)); padding: 4px 6px; border-radius: 8px; }
+    .gear {
+      position: absolute; top: 9px; right: 11px;
+      border: none; background: transparent; color: var(--muted); cursor: pointer;
+      font-size: calc(13px * var(--scale)); padding: 2px 5px; border-radius: 7px; line-height: 1; z-index: 2;
+    }
     .gear:hover { background: var(--field); }
 
-    /* daily message view */
+    /* daily message (compact) */
     .msg-en {
       font-style: italic;
-      font-size: calc(26px * var(--scale));
-      line-height: 1.5;
+      font-size: calc(21px * var(--scale));
+      line-height: 1.45;
       color: var(--ink);
-      margin: calc(14px * var(--scale)) auto calc(14px * var(--scale));
-      max-width: 30em;
+      margin: calc(2px * var(--scale)) auto calc(7px * var(--scale));
+      max-width: 34em;
     }
-    .divider { width: calc(34px * var(--scale)); height: 1px; background: var(--accent); margin: calc(14px * var(--scale)) auto; border: 0; }
     .msg-jp {
-      font-size: calc(14px * var(--scale));
-      line-height: 1.8;
+      font-size: calc(13px * var(--scale));
+      line-height: 1.7;
       color: var(--muted);
-      max-width: 30em;
+      max-width: 34em;
       margin: 0 auto;
     }
-    .more {
-      margin-top: calc(18px * var(--scale));
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.7);
-      color: var(--muted);
-      border-radius: 999px;
-      padding: 6px 16px;
-      font-size: calc(11px * var(--scale));
-      cursor: pointer;
-      font-family: var(--serif);
-    }
-    .more:hover { background: var(--field); }
 
-    /* selector view */
-    .sel-title { font-size: calc(18px * var(--scale)); color: var(--ink); margin: calc(6px * var(--scale)) 0 calc(4px * var(--scale)); }
-    .sel-sub { font-size: calc(12px * var(--scale)); color: var(--muted); margin-bottom: calc(16px * var(--scale)); }
-    .genres { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; text-align: left; }
+    /* selector */
+    .sel-title { font-size: calc(17px * var(--scale)); color: var(--ink); margin: calc(4px * var(--scale)) 0 calc(3px * var(--scale)); }
+    .sel-sub { font-size: calc(12px * var(--scale)); color: var(--muted); margin-bottom: calc(14px * var(--scale)); }
+    .genres { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 9px; text-align: left; }
     .genre {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 14px;
-      cursor: pointer;
-      background: rgba(255,255,255,0.6);
-      transition: border-color .15s, background .15s;
+      border: 1px solid var(--border); border-radius: 11px; padding: 12px 13px; cursor: pointer;
+      background: rgba(255,255,255,0.6); transition: border-color .15s, background .15s;
     }
     .genre[data-on="1"] { border-color: var(--accent); background: var(--field); }
-    .genre .gname { font-size: calc(15px * var(--scale)); color: var(--ink); display: flex; align-items: center; gap: 8px; }
+    .genre .gname { font-size: calc(14px * var(--scale)); color: var(--ink); display: flex; align-items: center; gap: 8px; }
     .genre .gcheck { width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid var(--accent); display: inline-grid; place-items: center; font-size: 11px; color: #fff; }
     .genre[data-on="1"] .gcheck { background: var(--accent); }
-    .genre .gsample { font-size: calc(11px * var(--scale)); color: var(--muted); margin-top: 6px; font-style: italic; line-height: 1.6; }
-    .confirm {
-      margin-top: 16px; border: none; background: var(--accent); color: #fff;
-      border-radius: 999px; padding: 9px 26px; font-size: calc(13px * var(--scale)); cursor: pointer; font-family: var(--serif);
-    }
+    .genre .gsample { font-size: calc(11px * var(--scale)); color: var(--muted); margin-top: 5px; font-style: italic; line-height: 1.55; }
+    .confirm { margin-top: 14px; border: none; background: var(--accent); color: #fff; border-radius: 999px; padding: 8px 24px; font-size: calc(13px * var(--scale)); cursor: pointer; font-family: var(--serif); }
     .confirm:disabled { opacity: 0.45; cursor: default; }
-    .settings-row { margin-top: 14px; display: flex; gap: 10px; align-items: center; justify-content: center; }
+    .settings-row { margin-top: 12px; display: flex; gap: 10px; align-items: center; justify-content: center; }
     .settings-row label { font-size: 11px; color: var(--muted); }
     .settings-row input { width: 64px; height: 30px; border: 1px solid var(--border); border-radius: 8px; padding: 0 8px; font: inherit; font-size: 12px; }
     .hidden { display: none; }
@@ -94,20 +77,13 @@
 </head>
 <body>
   <main class="card">
-    <div class="toolbar">
-      <span class="label" id="top-label">Today's Message</span>
-      <button class="gear" id="gear" title="系統を選び直す" aria-label="設定">⚙</button>
-    </div>
+    <button class="gear" id="gear" title="系統を選び直す" aria-label="設定">⚙</button>
 
-    <!-- 日替わりメッセージ -->
     <div id="view-msg">
       <p class="msg-en" id="msg-en">—</p>
-      <hr class="divider" />
       <p class="msg-jp" id="msg-jp"></p>
-      <button class="more" id="more">別のメッセージ</button>
     </div>
 
-    <!-- 系統セレクター -->
     <div id="view-sel" class="hidden">
       <p class="sel-title">どんな言葉が好きですか？</p>
       <p class="sel-sub">好きな系統を選んでね（複数OK）。毎朝その中からメッセージが届きます。</p>
@@ -123,164 +99,119 @@
   <script>
     const KEY = "n-message-widget-v1";
     const MESSAGES = {
-      gentle: {
-        name: "やさしい・癒し",
-        items: [
-          ["You are doing better than you think.", "あなたは思っているより、ずっとよくやれている。"],
-          ["It's okay to rest. You've earned it.", "休んでいい。あなたは十分がんばった。"],
-          ["Small steps still move you forward.", "小さな一歩でも、ちゃんと前に進んでいる。"],
-          ["Be gentle with yourself today.", "今日は、自分にやさしく。"],
-          ["You don't have to do everything at once.", "全部いっぺんにやらなくていい。"],
-          ["Your pace is the right pace.", "あなたのペースで大丈夫。"],
-          ["Even slow days have a quiet beauty.", "ゆっくりな日にも、静かな美しさがある。"],
-          ["Breathe. This moment is enough.", "ひと呼吸。今のままで十分。"],
-          ["Kindness to yourself is never wasted.", "自分への優しさは、決して無駄にならない。"],
-          ["You are allowed to take it easy.", "肩の力を抜いて、いいんだよ。"]
-        ]
-      },
-      bright: {
-        name: "前向き・元気",
-        items: [
-          ["Today is a fresh page—write something good.", "今日は新しいページ。いいことを書こう。"],
-          ["Good things are on their way to you.", "いいことは、ちゃんと近づいてきている。"],
-          ["Today's effort plants tomorrow's joy.", "今日の頑張りが、明日の喜びになる。"],
-          ["A little progress each day adds up.", "毎日の小さな前進が、積み重なっていく。"],
-          ["You've got everything you need to begin.", "始めるのに必要なものは、もう持っている。"],
-          ["Bright moments are made, not waited for.", "明るい瞬間は、待つものじゃなく作るもの。"],
-          ["Today is full of small chances.", "今日は小さなチャンスでいっぱい。"],
-          ["Start where you are; that's enough.", "今いる場所から始めればいい。それで十分。"],
-          ["Your energy lights up more than you know.", "あなたの元気は、思う以上に周りを照らしている。"],
-          ["Smile—it suits the day ahead.", "笑顔で。これからの一日に似合うよ。"]
-        ]
-      },
-      strong: {
-        name: "背中を押す・力強い",
-        items: [
-          ["You are stronger than the doubt in your head.", "あなたは、頭の中の迷いより強い。"],
-          ["Done is better than perfect.", "完璧よりも、まず終わらせること。"],
-          ["Begin before you feel ready.", "準備ができる前に、始めてしまおう。"],
-          ["Hard now means easy later.", "今の大変さは、後の楽につながる。"],
-          ["You can do hard things.", "あなたは、難しいことだってできる。"],
-          ["One brave choice changes the whole day.", "一つの勇気ある選択が、一日を変える。"],
-          ["Stop waiting. Start moving.", "待つのをやめて、動き出そう。"],
-          ["Your future self is cheering you on.", "未来のあなたが、今のあなたを応援している。"],
-          ["Progress favors the ones who keep going.", "進歩は、続ける人に味方する。"],
-          ["Decide, then make it true.", "決めて、それを本当にしよう。"]
-        ]
-      },
-      calm: {
-        name: "穏やか・マインドフル",
-        items: [
-          ["Right now is a good place to be.", "今この瞬間は、いい場所だ。"],
-          ["Let today unfold gently.", "今日は、穏やかにほどけていけばいい。"],
-          ["One thing at a time is enough.", "一度に一つで、十分。"],
-          ["Notice one small beautiful thing today.", "今日、小さな美しいものを一つ見つけよう。"],
-          ["Peace begins with a single breath.", "安らぎは、ひと呼吸から始まる。"],
-          ["You don't need to rush the morning.", "朝を急がなくていい。"],
-          ["Quiet moments are not wasted time.", "静かな時間は、無駄じゃない。"],
-          ["Be here, just for now.", "今だけ、ここにいよう。"],
-          ["Calm is a kind of strength.", "穏やかさも、一つの強さ。"],
-          ["Soften, and let the day come to you.", "力を抜いて、一日を迎えよう。"]
-        ]
-      },
-      selfcare: {
-        name: "自分を大切に",
-        items: [
-          ["You matter, exactly as you are.", "あなたは、そのままで大切な存在。"],
-          ["Take care of you first today.", "今日はまず、自分をいたわって。"],
-          ["Your feelings are worth listening to.", "自分の気持ちに、耳を傾けていい。"],
-          ["Rest is productive too.", "休むことも、立派な前進。"],
-          ["You deserve the kindness you give others.", "人に向ける優しさを、自分にも。"],
-          ["Saying no can be self-respect.", "断ることも、自分を大事にすること。"],
-          ["Fill your own cup first.", "まず、自分の心を満たそう。"],
-          ["You are enough, today and always.", "あなたは、今日もこれからも、十分。"],
-          ["Treat yourself like someone you love.", "大切な人に接するように、自分にも。"],
-          ["Your wellbeing comes first.", "あなたの心と体が、最優先。"]
-        ]
-      }
+      gentle: { name: "やさしい・癒し", items: [
+        ["You are doing better than you think.", "あなたは思っているより、ずっとよくやれている。"],
+        ["It's okay to rest. You've earned it.", "休んでいい。あなたは十分がんばった。"],
+        ["Small steps still move you forward.", "小さな一歩でも、ちゃんと前に進んでいる。"],
+        ["Be gentle with yourself today.", "今日は、自分にやさしく。"],
+        ["You don't have to do everything at once.", "全部いっぺんにやらなくていい。"],
+        ["Your pace is the right pace.", "あなたのペースで大丈夫。"],
+        ["Even slow days have a quiet beauty.", "ゆっくりな日にも、静かな美しさがある。"],
+        ["Breathe. This moment is enough.", "ひと呼吸。今のままで十分。"],
+        ["Kindness to yourself is never wasted.", "自分への優しさは、決して無駄にならない。"],
+        ["You are allowed to take it easy.", "肩の力を抜いて、いいんだよ。"]
+      ]},
+      bright: { name: "前向き・元気", items: [
+        ["Today is a fresh page—write something good.", "今日は新しいページ。いいことを書こう。"],
+        ["Good things are on their way to you.", "いいことは、ちゃんと近づいてきている。"],
+        ["Today's effort plants tomorrow's joy.", "今日の頑張りが、明日の喜びになる。"],
+        ["A little progress each day adds up.", "毎日の小さな前進が、積み重なっていく。"],
+        ["You've got everything you need to begin.", "始めるのに必要なものは、もう持っている。"],
+        ["Bright moments are made, not waited for.", "明るい瞬間は、待つものじゃなく作るもの。"],
+        ["Today is full of small chances.", "今日は小さなチャンスでいっぱい。"],
+        ["Start where you are; that's enough.", "今いる場所から始めればいい。それで十分。"],
+        ["Your energy lights up more than you know.", "あなたの元気は、思う以上に周りを照らしている。"],
+        ["Smile—it suits the day ahead.", "笑顔で。これからの一日に似合うよ。"]
+      ]},
+      strong: { name: "背中を押す・力強い", items: [
+        ["You are stronger than the doubt in your head.", "あなたは、頭の中の迷いより強い。"],
+        ["Done is better than perfect.", "完璧よりも、まず終わらせること。"],
+        ["Begin before you feel ready.", "準備ができる前に、始めてしまおう。"],
+        ["Hard now means easy later.", "今の大変さは、後の楽につながる。"],
+        ["You can do hard things.", "あなたは、難しいことだってできる。"],
+        ["One brave choice changes the whole day.", "一つの勇気ある選択が、一日を変える。"],
+        ["Stop waiting. Start moving.", "待つのをやめて、動き出そう。"],
+        ["Your future self is cheering you on.", "未来のあなたが、今のあなたを応援している。"],
+        ["Progress favors the ones who keep going.", "進歩は、続ける人に味方する。"],
+        ["Decide, then make it true.", "決めて、それを本当にしよう。"]
+      ]},
+      calm: { name: "穏やか・マインドフル", items: [
+        ["Right now is a good place to be.", "今この瞬間は、いい場所だ。"],
+        ["Let today unfold gently.", "今日は、穏やかにほどけていけばいい。"],
+        ["One thing at a time is enough.", "一度に一つで、十分。"],
+        ["Notice one small beautiful thing today.", "今日、小さな美しいものを一つ見つけよう。"],
+        ["Peace begins with a single breath.", "安らぎは、ひと呼吸から始まる。"],
+        ["You don't need to rush the morning.", "朝を急がなくていい。"],
+        ["Quiet moments are not wasted time.", "静かな時間は、無駄じゃない。"],
+        ["Be here, just for now.", "今だけ、ここにいよう。"],
+        ["Calm is a kind of strength.", "穏やかさも、一つの強さ。"],
+        ["Soften, and let the day come to you.", "力を抜いて、一日を迎えよう。"]
+      ]},
+      selfcare: { name: "自分を大切に", items: [
+        ["You matter, exactly as you are.", "あなたは、そのままで大切な存在。"],
+        ["Take care of you first today.", "今日はまず、自分をいたわって。"],
+        ["Your feelings are worth listening to.", "自分の気持ちに、耳を傾けていい。"],
+        ["Rest is productive too.", "休むことも、立派な前進。"],
+        ["You deserve the kindness you give others.", "人に向ける優しさを、自分にも。"],
+        ["Saying no can be self-respect.", "断ることも、自分を大事にすること。"],
+        ["Fill your own cup first.", "まず、自分の心を満たそう。"],
+        ["You are enough, today and always.", "あなたは、今日もこれからも、十分。"],
+        ["Treat yourself like someone you love.", "大切な人に接するように、自分にも。"],
+        ["Your wellbeing comes first.", "あなたの心と体が、最優先。"]
+      ]}
     };
 
     const defaults = { genres: [], size: 100 };
-    function load() {
-      try {
-        const s = JSON.parse(localStorage.getItem(KEY) || "{}");
-        return { ...defaults, ...s };
-      } catch (e) { return { ...defaults }; }
-    }
+    function load() { try { return { ...defaults, ...JSON.parse(localStorage.getItem(KEY) || "{}") }; } catch (e) { return { ...defaults }; } }
     function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
     let state = load();
-
     function applyScale() { document.documentElement.style.setProperty("--scale", (state.size || 100) / 100); }
-
     function pool() {
       const gs = (state.genres && state.genres.length) ? state.genres : Object.keys(MESSAGES);
-      let arr = [];
-      gs.forEach(g => { if (MESSAGES[g]) arr = arr.concat(MESSAGES[g].items); });
-      return arr;
+      let arr = []; gs.forEach(g => { if (MESSAGES[g]) arr = arr.concat(MESSAGES[g].items); }); return arr;
     }
-    function daySeed() {
-      const d = new Date();
-      return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
-    }
-    function showMessage(randomize) {
-      const arr = pool();
-      if (!arr.length) return;
-      let idx;
-      if (randomize) idx = Math.floor(Math.random() * arr.length);
-      else idx = daySeed() % arr.length;
+    function daySeed() { const d = new Date(); return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); }
+    function showMessage() {
+      const arr = pool(); if (!arr.length) return;
+      const idx = daySeed() % arr.length;
       document.getElementById("msg-en").textContent = arr[idx][0];
       document.getElementById("msg-jp").textContent = arr[idx][1];
     }
-
     function renderGenres() {
-      const wrap = document.getElementById("genres");
-      wrap.innerHTML = "";
+      const wrap = document.getElementById("genres"); wrap.innerHTML = "";
       Object.keys(MESSAGES).forEach(key => {
-        const g = MESSAGES[key];
-        const on = state.genres.includes(key) ? "1" : "0";
-        const sample = g.items[0];
-        const el = document.createElement("div");
-        el.className = "genre";
-        el.dataset.on = on;
-        el.dataset.key = key;
+        const g = MESSAGES[key]; const on = state.genres.includes(key) ? "1" : "0"; const sample = g.items[0];
+        const el = document.createElement("div"); el.className = "genre"; el.dataset.on = on; el.dataset.key = key;
         el.innerHTML = `<div class="gname"><span class="gcheck">${on === "1" ? "✓" : ""}</span>${g.name}</div>`
           + `<div class="gsample">“${sample[0]}”<br>${sample[1]}</div>`;
         el.addEventListener("click", () => {
-          const i = state.genres.indexOf(key);
-          if (i >= 0) state.genres.splice(i, 1); else state.genres.push(key);
-          renderGenres();
-          document.getElementById("confirm").disabled = state.genres.length === 0;
+          const i = state.genres.indexOf(key); if (i >= 0) state.genres.splice(i, 1); else state.genres.push(key);
+          renderGenres(); document.getElementById("confirm").disabled = state.genres.length === 0;
         });
         wrap.appendChild(el);
       });
       document.getElementById("size").value = state.size || 100;
       document.getElementById("confirm").disabled = state.genres.length === 0;
     }
-
     function openSelector() {
       document.getElementById("view-msg").classList.add("hidden");
       document.getElementById("view-sel").classList.remove("hidden");
-      document.getElementById("top-label").textContent = "Choose your style";
       renderGenres();
     }
     function openMessage() {
       document.getElementById("view-sel").classList.add("hidden");
       document.getElementById("view-msg").classList.remove("hidden");
-      document.getElementById("top-label").textContent = "Today's Message";
-      showMessage(false);
+      showMessage();
     }
-
-    document.getElementById("gear").addEventListener("click", openSelector);
-    document.getElementById("more").addEventListener("click", () => showMessage(true));
+    document.getElementById("gear").addEventListener("click", () => {
+      if (document.getElementById("view-sel").classList.contains("hidden")) openSelector(); else openMessage();
+    });
     document.getElementById("size").addEventListener("input", (e) => {
-      const n = Math.min(140, Math.max(55, Math.round(Number(e.target.value) || 100)));
-      state.size = n; applyScale();
+      state.size = Math.min(140, Math.max(55, Math.round(Number(e.target.value) || 100))); applyScale();
     });
     document.getElementById("confirm").addEventListener("click", () => { save(); openMessage(); });
-
     applyScale();
-    if (!state.genres || state.genres.length === 0) openSelector();
-    else openMessage();
+    if (!state.genres || state.genres.length === 0) openSelector(); else openMessage();
   </script>
 </body>
 </html>
