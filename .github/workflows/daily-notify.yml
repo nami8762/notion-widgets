@@ -1,0 +1,23 @@
+name: 毎朝の予定通知
+
+on:
+  schedule:
+    # 毎日 22:00 UTC = 翌 07:00 JST
+    - cron: "0 22 * * *"
+  workflow_dispatch: {} # 手動テスト実行も可能
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Send daily schedule
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DB_ID: ${{ secrets.NOTION_DB_ID }}
+          LINE_TOKEN: ${{ secrets.LINE_TOKEN }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: node scripts/daily-notify.mjs
