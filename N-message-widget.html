@@ -24,11 +24,15 @@
       width: min(100%, calc(820px * var(--scale)));
       margin: 0 auto;
       padding: calc(15px * var(--scale)) calc(40px * var(--scale)) calc(14px * var(--scale));
+      background: transparent;
+      text-align: center;
+    }
+    /* 系統を選び直すときだけ枠を出す（通常のメッセージ表示は枠なし） */
+    .card.selecting {
       border: 1px solid var(--border);
       border-radius: 12px;
       background: var(--paper);
       box-shadow: var(--shadow);
-      text-align: center;
     }
     .gear {
       position: absolute; top: 9px; right: 11px;
@@ -160,16 +164,16 @@
         ["Your wellbeing comes first.", "あなたの心と体が、最優先。"]
       ]},
       legend: { name: "偉人の名言", items: [
-        ["小さいことを積み重ねるのが、とんでもないところへ行くただ一つの道だ。", "— イチロー（MLB通算4367安打）"],
-        ["努力は必ず報われる。報われない努力があるのなら、それはまだ努力と呼べない。", "— 王貞治（世界記録868本塁打）"],
-        ["若いときに流さなかった汗は、年老いて涙に変わる。", "— 野村克也（名捕手・名将）"],
-        ["失敗したところでやめてしまうから失敗になる。成功するまで続ければ、それは成功になる。", "— 松下幸之助（パナソニック創業者）"],
-        ["天才とは、1%のひらめきと99%の努力である。", "— トーマス・エジソン（発明王）"],
-        ["ハングリーであれ。愚か者であれ。", "— スティーブ・ジョブズ（Apple創業者）"],
-        ["何事も、成し遂げるまでは不可能に見えるものだ。", "— ネルソン・マンデラ（南アフリカ元大統領）"],
-        ["人生は自転車のようなもの。倒れないためには、走り続けなければならない。", "— アインシュタイン（物理学者）"],
-        ["顔を太陽に向けていれば、影は見えない。", "— ヘレン・ケラー（教育家・社会活動家）"],
-        ["失敗は受け入れられる。だが、挑戦しないことは受け入れられない。", "— マイケル・ジョーダン（NBAの伝説）"]
+        ["小さいことを積み重ねるのが、とんでもないところへ行くただ一つの道だ。", "— イチロー"],
+        ["努力は必ず報われる。報われない努力があるのなら、それはまだ努力と呼べない。", "— 王貞治"],
+        ["若いときに流さなかった汗は、年老いて涙に変わる。", "— 野村克也"],
+        ["失敗したところでやめてしまうから失敗になる。成功するまで続ければ、それは成功になる。", "— 松下幸之助"],
+        ["天才とは、1%のひらめきと99%の努力である。", "— トーマス・エジソン"],
+        ["ハングリーであれ。愚か者であれ。", "— スティーブ・ジョブズ"],
+        ["何事も、成し遂げるまでは不可能に見えるものだ。", "— ネルソン・マンデラ"],
+        ["人生は自転車のようなもの。倒れないためには、走り続けなければならない。", "— アインシュタイン"],
+        ["顔を太陽に向けていれば、影は見えない。", "— ヘレン・ケラー"],
+        ["失敗は受け入れられる。だが、挑戦しないことは受け入れられない。", "— マイケル・ジョーダン"]
       ]}
     };
 
@@ -210,11 +214,13 @@
       document.getElementById("confirm").disabled = state.genres.length === 0;
     }
     function openSelector() {
+      document.querySelector(".card").classList.add("selecting");
       document.getElementById("view-msg").classList.add("hidden");
       document.getElementById("view-sel").classList.remove("hidden");
       renderGenres();
     }
     function openMessage() {
+      document.querySelector(".card").classList.remove("selecting");
       document.getElementById("view-sel").classList.add("hidden");
       document.getElementById("view-msg").classList.remove("hidden");
       showMessage();
