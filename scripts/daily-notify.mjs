@@ -22,6 +22,38 @@ function jstDates() {
 
 function plain(rt) { return (rt || []).map((t) => t.plain_text).join(""); }
 
+// 今朝の天気（無料のOpen-Meteo・APIキー不要・天気ウィジェットと同じ高知）。
+// 取得できなければ空文字を返す（通知は天気なしで続行）。
+async function fetchWeather() {
+  try {
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=33.5597&longitude=133.5311"
+      + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"
+      + "&timezone=Asia%2FTokyo&forecast_days=1";
+    const res = await fetch(url);
+    if (!res.ok) return "";
+    const d = (await res.json()).daily;
+    const code = d.weather_code[0];
+    const tmax = Math.round(d.temperature_2m_max[0]);
+    const tmin = Math.round(d.temperature_2m_min[0]);
+    const pop = d.precipitation_probability_max[0];
+    // WMO天気コード → 絵文字＋日本語
+    const wmo = (c) => {
+      if (c === 0) return "☀️ 快晴";
+      if (c <= 2) return "🌤 晴れ";
+      if (c === 3) return "☁️ くもり";
+      if (c <= 48) return "🌫 霧";
+      if (c <= 67) return "🌧 雨";
+      if (c <= 77) return "🌨 雪";
+      if (c <= 82) return "🌧 にわか雨";
+      if (c <= 86) return "🌨 にわか雪";
+      return "⛈ 雷雨";
+    };
+    return `今日の天気：${wmo(code)}／${tmin}〜${tmax}℃／降水確率${pop ?? "?"}%`;
+  } catch (e) {
+    return "";
+  }
+}
+
 async function fetchTodayEvents() {
   const { today, tomorrow } = jstDates();
   const res = await fetch(`https://api.notion.com/v1/databases/${NOTION_DB_ID}/query`, {
@@ -59,6 +91,7 @@ async function fetchTodayEvents() {
       place: plain(pr["場所"]?.rich_text),
       meet: plain(pr["集合時間"]?.rich_text),
       mainStart: plain(pr["開始・本番"]?.rich_text),
+      rain: plain(pr["雨天時"]?.rich_text),
       items: plain(pr["持ち物"]?.rich_text),
       memo: plain(pr["メモ"]?.rich_text),
       link: pr["リンク"]?.url || "",
@@ -74,6 +107,7 @@ function eventLines(e, withLink) {
   if (e.who) s += `\n　👤${e.who}`;
   if (e.meet) s += `\n　🕖集合 ${e.meet}`;
   if (e.mainStart) s += `\n　🏁${e.mainStart}`;
+  if (e.rain) s += `\n　☔雨天時：${e.rain}`;
   if (e.place) s += `\n　📍${e.place}`;
   if (e.items) s += `\n　🎒${e.items}`;
   if (e.memo) s += `\n　📝${e.memo}`;
@@ -82,11 +116,12 @@ function eventLines(e, withLink) {
   return s;
 }
 
-function buildMessage(events, label, withLink) {
+function buildMessage(events, label, withLink, weather) {
+  const wx = weather ? `\n${weather}` : "";
   if (!events.length) {
-    return `☀️ おはようございます！\n今日 ${label} は予定なし。\nゆっくりいきましょう☕`;
+    return `☀️ おはようございます！${wx}\n今日 ${label} は予定なし。\nゆっくりいきましょう☕`;
   }
-  let msg = `☀️ おはようございます！\n今日 ${label} の予定\n`;
+  let msg = `☀️ おはようございます！${wx}\n今日 ${label} の予定\n`;
   for (const e of events) msg += `\n${eventLines(e, withLink)}\n`;
   return msg.trim();
 }
@@ -125,9 +160,9 @@ async function sendNtfy(text, label, events) {
 
 (async () => {
   const { label } = jstDates();
-  const events = await fetchTodayEvents();
-  const lineText = buildMessage(events, label, true);   // LINE: リンクを1行表示
-  const ntfyText = buildMessage(events, label, false);  // iPhone: リンクはボタンに
+  const [events, weather] = await Promise.all([fetchTodayEvents(), fetchWeather()]);
+  const lineText = buildMessage(events, label, true, weather);   // LINE: リンクを1行表示
+  const ntfyText = buildMessage(events, label, false, weather);  // iPhone: リンクはボタンに
   console.log("---- LINE ----\n" + lineText + "\n--------------");
   await sendLine(lineText);
   await sendNtfy(ntfyText, label, events);
