@@ -158,6 +158,18 @@
         ["You are enough, today and always.", "あなたは、今日もこれからも、十分。"],
         ["Treat yourself like someone you love.", "大切な人に接するように、自分にも。"],
         ["Your wellbeing comes first.", "あなたの心と体が、最優先。"]
+      ]},
+      legend: { name: "偉人の名言", items: [
+        ["小さいことを積み重ねるのが、とんでもないところへ行くただ一つの道だ。", "— イチロー（MLB通算4367安打）"],
+        ["努力は必ず報われる。報われない努力があるのなら、それはまだ努力と呼べない。", "— 王貞治（世界記録868本塁打）"],
+        ["若いときに流さなかった汗は、年老いて涙に変わる。", "— 野村克也（名捕手・名将）"],
+        ["失敗したところでやめてしまうから失敗になる。成功するまで続ければ、それは成功になる。", "— 松下幸之助（パナソニック創業者）"],
+        ["天才とは、1%のひらめきと99%の努力である。", "— トーマス・エジソン（発明王）"],
+        ["ハングリーであれ。愚か者であれ。", "— スティーブ・ジョブズ（Apple創業者）"],
+        ["何事も、成し遂げるまでは不可能に見えるものだ。", "— ネルソン・マンデラ（南アフリカ元大統領）"],
+        ["人生は自転車のようなもの。倒れないためには、走り続けなければならない。", "— アインシュタイン（物理学者）"],
+        ["顔を太陽に向けていれば、影は見えない。", "— ヘレン・ケラー（教育家・社会活動家）"],
+        ["失敗は受け入れられる。だが、挑戦しないことは受け入れられない。", "— マイケル・ジョーダン（NBAの伝説）"]
       ]}
     };
 
@@ -174,7 +186,11 @@
     function showMessage() {
       const arr = pool(); if (!arr.length) return;
       const idx = daySeed() % arr.length;
-      document.getElementById("msg-en").textContent = arr[idx][0];
+      const main = arr[idx][0];
+      // 日本語（偉人の名言など）は斜体だと崩れるので通常体にする
+      const isJa = /[぀-ヿ一-龯]/.test(main);
+      document.getElementById("msg-en").style.fontStyle = isJa ? "normal" : "italic";
+      document.getElementById("msg-en").textContent = main;
       document.getElementById("msg-jp").textContent = arr[idx][1];
     }
     function renderGenres() {
