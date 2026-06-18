@@ -117,11 +117,11 @@ function eventLines(e, withLink) {
 }
 
 function buildMessage(events, label, withLink, weather) {
-  const wx = weather ? `\n${weather}` : "";
+  const head = weather ? `${weather}\n` : "";
   if (!events.length) {
-    return `☀️ おはようございます！${wx}\n今日 ${label} は予定なし。\nゆっくりいきましょう☕`;
+    return `${head}今日 ${label} は予定なし`;
   }
-  let msg = `☀️ おはようございます！${wx}\n今日 ${label} の予定\n`;
+  let msg = `${head}今日 ${label} の予定\n`;
   for (const e of events) msg += `\n${eventLines(e, withLink)}\n`;
   return msg.trim();
 }
