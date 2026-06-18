@@ -94,7 +94,7 @@ async function sendNtfy(text, label) {
   if (!NTFY_TOPIC) { console.log("NTFY_TOPIC未設定→スキップ"); return; }
   const res = await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
     method: "POST",
-    headers: { "Title": `今日の予定 ${label}`, "Tags": "calendar", "Content-Type": "text/plain; charset=utf-8" },
+    headers: { "Title": "Today's Schedule", "Tags": "calendar", "Content-Type": "text/plain; charset=utf-8" },
     body: text,
   });
   console.log(`ntfy: ${res.status} ${res.ok ? "OK" : await res.text()}`);
