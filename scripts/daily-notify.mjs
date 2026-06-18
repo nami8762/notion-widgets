@@ -55,28 +55,39 @@ async function fetchTodayEvents() {
       time,
       title: plain(pr["予定"]?.title),
       kind: pr["種類"]?.select?.name || "",
+      who: plain(pr["誰と"]?.rich_text),
       place: plain(pr["場所"]?.rich_text),
       meet: plain(pr["集合時間"]?.rich_text),
+      mainStart: plain(pr["開始・本番"]?.rich_text),
       items: plain(pr["持ち物"]?.rich_text),
+      memo: plain(pr["メモ"]?.rich_text),
+      link: pr["リンク"]?.url || "",
       check: pr["要確認"]?.checkbox || false,
     };
   });
 }
 
-function buildMessage(events, label) {
+// 1件分の本文を組み立てる。withLink=true なら末尾にリンク行を足す（LINE用）。
+function eventLines(e, withLink) {
+  let s = `${e.time ? "🕐 " + e.time + "  " : ""}${e.title}`;
+  if (e.kind) s += `（${e.kind}）`;
+  if (e.who) s += `\n　👤${e.who}`;
+  if (e.meet) s += `\n　🕖集合 ${e.meet}`;
+  if (e.mainStart) s += `\n　🏁${e.mainStart}`;
+  if (e.place) s += `\n　📍${e.place}`;
+  if (e.items) s += `\n　🎒${e.items}`;
+  if (e.memo) s += `\n　📝${e.memo}`;
+  if (e.check) s += `\n　⚠️要確認`;
+  if (e.link) s += withLink ? `\n　🔗 ${e.link}` : `\n　💻 オンライン`;
+  return s;
+}
+
+function buildMessage(events, label, withLink) {
   if (!events.length) {
     return `☀️ おはようございます！\n今日 ${label} は予定なし。\nゆっくりいきましょう☕`;
   }
   let msg = `☀️ おはようございます！\n今日 ${label} の予定\n`;
-  for (const e of events) {
-    msg += `\n${e.time ? "🕐 " + e.time + "  " : ""}${e.title}`;
-    if (e.kind) msg += `（${e.kind}）`;
-    if (e.meet) msg += `\n　集合 ${e.meet}`;
-    if (e.place) msg += `\n　📍${e.place}`;
-    if (e.items) msg += `\n　🎒${e.items}`;
-    if (e.check) msg += `\n　⚠️要確認`;
-    msg += "\n";
-  }
+  for (const e of events) msg += `\n${eventLines(e, withLink)}\n`;
   return msg.trim();
 }
 
@@ -90,12 +101,24 @@ async function sendLine(text) {
   console.log(`LINE: ${res.status} ${res.ok ? "OK" : await res.text()}`);
 }
 
-async function sendNtfy(text, label) {
+// ntfyはJSON送信（ヘッダーだと日本語が文字化けエラーになるため）。
+// リンクのある予定は通知に「参加」ボタンを付ける（最大3つまで）。
+async function sendNtfy(text, label, events) {
   if (!NTFY_TOPIC) { console.log("NTFY_TOPIC未設定→スキップ"); return; }
-  const res = await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+  const actions = events
+    .filter((e) => e.link)
+    .slice(0, 3)
+    .map((e) => ({ action: "view", label: `参加: ${e.title}`.slice(0, 36), url: e.link }));
+  const res = await fetch("https://ntfy.sh", {
     method: "POST",
-    headers: { "Title": "Today's Schedule", "Tags": "calendar", "Content-Type": "text/plain; charset=utf-8" },
-    body: text,
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+    body: JSON.stringify({
+      topic: NTFY_TOPIC,
+      title: `今日の予定 ${label}`,
+      message: text,
+      tags: ["calendar"],
+      ...(actions.length ? { actions } : {}),
+    }),
   });
   console.log(`ntfy: ${res.status} ${res.ok ? "OK" : await res.text()}`);
 }
@@ -103,8 +126,9 @@ async function sendNtfy(text, label) {
 (async () => {
   const { label } = jstDates();
   const events = await fetchTodayEvents();
-  const text = buildMessage(events, label);
-  console.log("---- message ----\n" + text + "\n-----------------");
-  await sendLine(text);
-  await sendNtfy(text, label);
+  const lineText = buildMessage(events, label, true);   // LINE: リンクを1行表示
+  const ntfyText = buildMessage(events, label, false);  // iPhone: リンクはボタンに
+  console.log("---- LINE ----\n" + lineText + "\n--------------");
+  await sendLine(lineText);
+  await sendNtfy(ntfyText, label, events);
 })().catch((e) => { console.error(e); process.exit(1); });
