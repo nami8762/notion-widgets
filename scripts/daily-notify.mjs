@@ -6,6 +6,7 @@ const NOTION_TOKEN = process.env.NOTION_TOKEN;
 const NOTION_DB_ID = process.env.NOTION_DB_ID || "98063bbe276d4ec08969215567a1f5b2"; // 📅予定 DB
 const LINE_TOKEN = process.env.LINE_TOKEN;
 const NTFY_TOPIC = process.env.NTFY_TOPIC;
+const POST_HUB_DB = process.env.POST_HUB_DB || "7fbf6bbcb9bb4891b44a70b59f9b2da4"; // 📝投稿ハブ
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -51,6 +52,29 @@ async function fetchWeather() {
     return `今日の天気：${wmo(code)}／${tmin}〜${tmax}℃／降水確率${pop ?? "?"}%`;
   } catch (e) {
     return "";
+  }
+}
+
+// 📝投稿ハブの「📥未確認」件数を取得。接続前/失敗時はnull（通知は件数なしで続行）。
+async function fetchPendingPostCount() {
+  try {
+    const res = await fetch(`https://api.notion.com/v1/databases/${POST_HUB_DB}/query`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${NOTION_TOKEN}`,
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        filter: { property: "ステータス", select: { equals: "📥未確認" } },
+        page_size: 100,
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.results.length;
+  } catch (e) {
+    return null;
   }
 }
 
@@ -116,14 +140,15 @@ function eventLines(e, withLink) {
   return s;
 }
 
-function buildMessage(events, label, withLink, weather) {
+function buildMessage(events, label, withLink, weather, pending) {
   const head = weather ? `${weather}\n` : "";
+  const post = pending ? `\n📝 未確認の投稿が${pending}件（投稿ハブで確認）` : "";
   if (!events.length) {
-    return `${head}今日 ${label} は予定なし`;
+    return `${head}今日 ${label} は予定なし${post}`;
   }
   let msg = `${head}今日 ${label} の予定\n`;
   for (const e of events) msg += `\n${eventLines(e, withLink)}\n`;
-  return msg.trim();
+  return msg.trim() + post;
 }
 
 async function sendLine(text) {
@@ -160,9 +185,9 @@ async function sendNtfy(text, label, events) {
 
 (async () => {
   const { label } = jstDates();
-  const [events, weather] = await Promise.all([fetchTodayEvents(), fetchWeather()]);
-  const lineText = buildMessage(events, label, true, weather);   // LINE: リンクを1行表示
-  const ntfyText = buildMessage(events, label, false, weather);  // iPhone: リンクはボタンに
+  const [events, weather, pending] = await Promise.all([fetchTodayEvents(), fetchWeather(), fetchPendingPostCount()]);
+  const lineText = buildMessage(events, label, true, weather, pending);   // LINE: リンクを1行表示
+  const ntfyText = buildMessage(events, label, false, weather, pending);  // iPhone: リンクはボタンに
   console.log("---- LINE ----\n" + lineText + "\n--------------");
   await sendLine(lineText);
   await sendNtfy(ntfyText, label, events);
