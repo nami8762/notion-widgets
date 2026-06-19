@@ -7,6 +7,7 @@ const NOTION_DB_ID = process.env.NOTION_DB_ID || "98063bbe276d4ec08969215567a1f5
 const LINE_TOKEN = process.env.LINE_TOKEN;
 const NTFY_TOPIC = process.env.NTFY_TOPIC;
 const POST_HUB_DB = process.env.POST_HUB_DB || "7fbf6bbcb9bb4891b44a70b59f9b2da4"; // 📝投稿ハブ
+const TODO_DB = process.env.TODO_DB || "33e363e0e7e98321a06407db99322b99"; // ToDo DB
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -183,6 +184,40 @@ async function sendNtfy(text, label, events) {
   console.log(`ntfy: ${res.status} ${res.ok ? "OK" : await res.text()}`);
 }
 
+// 毎日のタスク「Threads投稿（最低1本）」をToDoに自動作成。接続前/失敗時はスキップ。今日ぶんが既にあれば作らない（重複防止）。
+async function createDailyPostTask() {
+  try {
+    const { today, tomorrow } = jstDates();
+    const headers = { "Authorization": `Bearer ${NOTION_TOKEN}`, "Notion-Version": "2022-06-28", "Content-Type": "application/json" };
+    const q = await fetch(`https://api.notion.com/v1/databases/${TODO_DB}/query`, {
+      method: "POST", headers,
+      body: JSON.stringify({ filter: { and: [
+        { property: "いつ", date: { on_or_after: `${today}T00:00:00+09:00` } },
+        { property: "いつ", date: { before: `${tomorrow}T00:00:00+09:00` } },
+      ] }, page_size: 100 }),
+    });
+    if (!q.ok) { console.log(`ToDo未接続→日次タスク作成スキップ (${q.status})`); return; }
+    const data = await q.json();
+    const exists = data.results.some((p) => (p.properties?.["やること"]?.title || []).map((t) => t.plain_text).join("").startsWith("📝Threads投稿"));
+    if (exists) { console.log("今日のThreads投稿タスクは既存→スキップ"); return; }
+    const res = await fetch("https://api.notion.com/v1/pages", {
+      method: "POST", headers,
+      body: JSON.stringify({
+        parent: { database_id: TODO_DB },
+        properties: {
+          "やること": { title: [{ text: { content: "📝Threads投稿（最低1本・投稿ハブから確認して投稿）" } }] },
+          "種類": { select: { name: "仕事・開発" } },
+          "だれが": { multi_select: [{ name: "NAMI" }] },
+          "ステータス": { status: { name: "未着手" } },
+          "いつ": { date: { start: today } },
+          "備考": { rich_text: [{ text: { content: "毎日ルーティン（自動作成）。時間があればエンゲージ30分・伸び投稿3本リサーチも。" } }] },
+        },
+      }),
+    });
+    console.log(`日次タスク作成: ${res.status} ${res.ok ? "OK" : await res.text()}`);
+  } catch (e) { console.log("日次タスク作成エラー→スキップ", e.message); }
+}
+
 (async () => {
   const { label } = jstDates();
   const [events, weather, pending] = await Promise.all([fetchTodayEvents(), fetchWeather(), fetchPendingPostCount()]);
@@ -191,4 +226,5 @@ async function sendNtfy(text, label, events) {
   console.log("---- LINE ----\n" + lineText + "\n--------------");
   await sendLine(lineText);
   await sendNtfy(ntfyText, label, events);
+  await createDailyPostTask(); // 「最低1日1投稿」を毎朝ToDoへ
 })().catch((e) => { console.error(e); process.exit(1); });
