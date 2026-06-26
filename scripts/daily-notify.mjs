@@ -7,7 +7,7 @@ const NOTION_DB_ID = process.env.NOTION_DB_ID || "98063bbe276d4ec08969215567a1f5
 const LINE_TOKEN = process.env.LINE_TOKEN;
 const NTFY_TOPIC = process.env.NTFY_TOPIC;
 const POST_HUB_DB = process.env.POST_HUB_DB || "7fbf6bbcb9bb4891b44a70b59f9b2da4"; // 📝投稿ハブ
-const TODO_DB = process.env.TODO_DB || "33e363e0e7e98321a06407db99322b99"; // ToDo DB
+const TODO_DB = process.env.TODO_DB || "d32363e0e7e98370baf101cc6e6c90f9"; // ToDo DB（正：sync-schedule.ts と一致）
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -79,6 +79,41 @@ async function fetchPendingPostCount() {
   }
 }
 
+// 今日やるべきこと（ToDo DB）：未完了で期日が今日まで（やり残し含む）を一覧。接続前/失敗時は null。
+async function fetchTodayTasks() {
+  try {
+    const { tomorrow } = jstDates();
+    const res = await fetch(`https://api.notion.com/v1/databases/${TODO_DB}/query`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${NOTION_TOKEN}`,
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        filter: {
+          and: [
+            { property: "ステータス", status: { does_not_equal: "完了" } },
+            { property: "いつ", date: { before: `${tomorrow}T00:00:00+09:00` } },
+          ],
+        },
+        sorts: [{ property: "いつ", direction: "ascending" }],
+        page_size: 100,
+      }),
+    });
+    if (!res.ok) { console.log(`ToDo一覧取得スキップ (${res.status})`); return null; }
+    const data = await res.json();
+    return data.results
+      .map((p) => ({
+        title: plain(p.properties?.["やること"]?.title),
+        status: p.properties?.["ステータス"]?.status?.name || "",
+      }))
+      .filter((t) => t.title);
+  } catch (e) {
+    return null;
+  }
+}
+
 async function fetchTodayEvents() {
   const { today, tomorrow } = jstDates();
   const res = await fetch(`https://api.notion.com/v1/databases/${NOTION_DB_ID}/query`, {
@@ -141,15 +176,24 @@ function eventLines(e, withLink) {
   return s;
 }
 
-function buildMessage(events, label, withLink, weather, pending) {
+function buildMessage(events, label, withLink, weather, pending, tasks) {
   const head = weather ? `${weather}\n` : "";
-  const post = pending ? `\n📝 未確認の投稿が${pending}件（投稿ハブで確認）` : "";
-  if (!events.length) {
-    return `${head}今日 ${label} は予定なし${post}`;
+  const post = pending ? `\n\n📝 未確認の投稿が${pending}件（投稿ハブで確認）` : "";
+
+  let body = events.length
+    ? `今日 ${label} の予定\n` + events.map((e) => `\n${eventLines(e, withLink)}\n`).join("").trimEnd()
+    : `今日 ${label} は予定なし`;
+
+  let todo = "";
+  if (tasks && tasks.length) {
+    todo = `\n\n✅ 今日のやること（${tasks.length}件）`;
+    for (const t of tasks) {
+      const mark = t.status === "着手中" ? "▶" : "☐";
+      todo += `\n　${mark} ${t.title}`;
+    }
   }
-  let msg = `${head}今日 ${label} の予定\n`;
-  for (const e of events) msg += `\n${eventLines(e, withLink)}\n`;
-  return msg.trim() + post;
+
+  return `${head}${body}${todo}${post}`;
 }
 
 async function sendLine(text) {
@@ -220,9 +264,9 @@ async function createDailyPostTask() {
 
 (async () => {
   const { label } = jstDates();
-  const [events, weather, pending] = await Promise.all([fetchTodayEvents(), fetchWeather(), fetchPendingPostCount()]);
-  const lineText = buildMessage(events, label, true, weather, pending);   // LINE: リンクを1行表示
-  const ntfyText = buildMessage(events, label, false, weather, pending);  // iPhone: リンクはボタンに
+  const [events, weather, pending, tasks] = await Promise.all([fetchTodayEvents(), fetchWeather(), fetchPendingPostCount(), fetchTodayTasks()]);
+  const lineText = buildMessage(events, label, true, weather, pending, tasks);   // LINE: リンクを1行表示
+  const ntfyText = buildMessage(events, label, false, weather, pending, tasks);  // iPhone: リンクはボタンに
   console.log("---- LINE ----\n" + lineText + "\n--------------");
   await sendLine(lineText);
   await sendNtfy(ntfyText, label, events);
